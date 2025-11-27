@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain Tumor Diagnosis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            background: #0a0a0a;
+        }
+
+        /* Animated Background */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0033 25%, #2d0052 50%, #1a0033 75%, #0a0a0a 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* Floating Particles */
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(147, 51, 234, 0.4), transparent);
+            animation: float 20s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0) scale(1); opacity: 0.3; }
+            50% { transform: translateY(-100px) translateX(50px) scale(1.2); opacity: 0.6; }
+        }
+
+        /* Welcome Page */
+        .welcome-page {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        .welcome-page.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .main-heading {
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #a855f7, #ec4899, #8b5cf6);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            margin-bottom: 1rem;
+            animation: textShine 3s ease-in-out infinite, fadeInDown 1s ease;
+            letter-spacing: 2px;
+        }
+
+        @keyframes textShine {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            color: #c084fc;
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInUp 1s ease 0.3s both;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .get-started-btn {
+            position: relative;
+            padding: 1.5rem 3.5rem;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.5);
+            animation: pulse 2s ease-in-out infinite, fadeInScale 1s ease 0.6s both;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 30px rgba(168, 85, 247, 0.5); }
+            50% { box-shadow: 0 0 50px rgba(168, 85, 247, 0.8), 0 0 80px rgba(168, 85, 247, 0.4); }
+        }
+
+        .get-started-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 60px rgba(168, 85, 247, 0.8);
+        }
+
+        .get-started-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .get-started-btn:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #9333ea;
+            font-size: 0.95rem;
+            animation: fadeIn 1s ease 1s both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Diagnosis Page */
+        .diagnosis-page {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+            opacity: 0;
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        .diagnosis-page.active {
+            display: flex;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .upload-container {
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 2rem;
+        }
+
+        .dropzone {
+            border: 3px dashed #7c3aed;
+            border-radius: 30px;
+            padding: 4rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            background: rgba(124, 58, 237, 0.05);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            animation: borderGlow 3s ease infinite;
+        }
+
+        @keyframes borderGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(124, 58, 237, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(168, 85, 247, 0.6); }
+        }
+
+        .dropzone:hover {
+            border-color: #a855f7;
+            background: rgba(168, 85, 247, 0.1);
+            transform: scale(1.02);
+        }
+
+        .dropzone.dragover {
+            border-color: #ec4899;
+            background: rgba(236, 72, 153, 0.1);
+            transform: scale(1.05);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: bounce 2s ease infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .upload-text {
+            color: #c084fc;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-subtext {
+            color: #9333ea;
+            font-size: 0.9rem;
+        }
+
+        .file-name {
+            margin-top: 1rem;
+            padding: 0.8rem 1.5rem;
+            background: rgba(124, 58, 237, 0.2);
+            border-radius: 20px;
+            color: #c084fc;
+            display: inline-block;
+            animation: slideInUp 0.5s ease;
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .error-message {
+            margin-top: 1rem;
+            padding: 1rem 1.5rem;
+            background: rgba(239, 68, 68, 0.2);
+            border: 2px solid #ef4444;
+            border-radius: 15px;
+            color: #fca5a5;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .diagnose-btn, .clear-btn {
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .diagnose-btn {
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            box-shadow: 0 5px 20px rgba(124, 58, 237, 0.4);
+        }
+
+        .diagnose-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(124, 58, 237, 0.6);
+        }
+
+        .diagnose-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .clear-btn {
+            background: linear-gradient(135deg, #ec4899, #f97316);
+            box-shadow: 0 5px 20px rgba(236, 72, 153, 0.4);
+        }
+
+        .clear-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(236, 72, 153, 0.6);
+        }
+
+        /* Loading Spinner */
+        .loading-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 2rem;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .loading-container.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 80px;
+            height: 80px;
+            border: 6px solid rgba(168, 85, 247, 0.2);
+            border-top: 6px solid #a855f7;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 1.5rem;
+            color: #c084fc;
+            font-size: 1.1rem;
+            animation: loadingPulse 2s ease infinite;
+        }
+
+        @keyframes loadingPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Results Canvas */
+        .results-container {
+            display: none;
+            width: 100%;
+            max-width: 1400px;
+            margin-top: 3rem;
+            animation: fadeInScale 0.8s ease;
+        }
+
+        .results-container.active {
+            display: block;
+        }
+
+        .results-canvas {
+            background: rgba(124, 58, 237, 0.1);
+            border: 2px solid #7c3aed;
+            border-radius: 30px;
+            padding: 2rem;
+            box-shadow: 0 10px 50px rgba(124, 58, 237, 0.3);
+        }
+
+        .images-row {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .image-card {
+            flex: 1;
+            min-width: 250px;
+            max-width: 350px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 20px rgba(168, 85, 247, 0.2);
+            animation: slideInUp 0.6s ease;
+            transition: transform 0.3s ease;
+        }
+
+        .image-card:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .image-card:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        .image-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .image-card img {
+            width: 100%;
+            border-radius: 15px;
+            margin-bottom: 1rem;
+        }
+
+        .image-label {
+            text-align: center;
+            color: #c084fc;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .prediction-info {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 2rem;
+            background: rgba(168, 85, 247, 0.1);
+            border-radius: 20px;
+            animation: fadeIn 0.8s ease 0.6s both;
+        }
+
+        .prediction-label {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .tumor-size {
+            font-size: 1.3rem;
+            color: #c084fc;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .main-heading {
+                font-size: 2.5rem;
+            }
+
+            .images-row {
+                flex-direction: column;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+
+    <!-- Floating Particles -->
+    <div class="particle" style="width: 100px; height: 100px; top: 10%; left: 10%; animation-delay: 0s;"></div>
+    <div class="particle" style="width: 150px; height: 150px; top: 60%; left: 80%; animation-delay: 2s;"></div>
+    <div class="particle" style="width: 80px; height: 80px; top: 80%; left: 15%; animation-delay: 4s;"></div>
+    <div class="particle" style="width: 120px; height: 120px; top: 30%; left: 70%; animation-delay: 6s;"></div>
+
+    <!-- Welcome Page -->
+    <div class="welcome-page" id="welcomePage">
+        <h1 class="main-heading">Segmented Classification<br>of Brain Tumor</h1>
+        <p class="subtitle">AI-Powered Medical Diagnosis at Your Fingertips</p>
+        <button class="get-started-btn" id="getStartedBtn">Get Started</button>
+        <div class="footer">Developed by Arham Khan</div>
+    </div>
+
+    <!-- Diagnosis Page -->
+    <div class="diagnosis-page" id="diagnosisPage">
+        <h2 class="page-title">Brain Tumor Diagnosis</h2>
+        
+        <div class="upload-container">
+            <div class="dropzone" id="dropzone">
+                <div class="upload-icon">🧠</div>
+                <div class="upload-text">Drop your brain scan here</div>
+                <div class="upload-subtext">or click to browse</div>
+                <div id="fileName"></div>
+                <div id="errorMessage"></div>
+            </div>
+            <input type="file" id="fileInput" accept="image/*">
+        </div>
+
+        <div class="action-buttons">
+            <button class="diagnose-btn" id="diagnoseBtn" disabled>Diagnose</button>
+            <button class="clear-btn" id="clearBtn">Clear</button>
+        </div>
+
+        <div class="loading-container" id="loadingContainer">
+            <div class="spinner"></div>
+            <div class="loading-text">Analyzing your brain scan...</div>
+            <div class="loading-text" style="animation-delay: 0.5s;">Focusing on key components...</div>
+        </div>
+
+        <div class="results-container" id="resultsContainer">
+            <div class="results-canvas">
+                <div class="images-row">
+                    <div class="image-card">
+                        <img id="originalImage" alt="Original Image">
+                        <div class="image-label">Original Scan</div>
+                    </div>
+                    <div class="image-card">
+                        <img id="segmentedImage" alt="Segmented Image">
+                        <div class="image-label">Segmentation Mask</div>
+                    </div>
+                </div>
+                <div class="prediction-info">
+                    <div class="prediction-label" id="predictionLabel"></div>
+                    <div class="tumor-size" id="tumorSize"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let uploadedFile = null;
+
+        // Get Started Button
+        document.getElementById('getStartedBtn').addEventListener('click', () => {
+            document.getElementById('welcomePage').classList.add('fade-out');
+            setTimeout(() => {
+                document.getElementById('welcomePage').style.display = 'none';
+                document.getElementById('diagnosisPage').classList.add('active');
+            }, 500);
+        });
+
+        // Dropzone functionality
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+        const diagnoseBtn = document.getElementById('diagnoseBtn');
+
+        dropzone.addEventListener('click', () => fileInput.click());
+
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('dragover');
+        });
+
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.classList.remove('dragover');
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            handleFile(files[0]);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            handleFile(e.target.files[0]);
+        });
+
+        function handleFile(file) {
+            const errorDiv = document.getElementById('errorMessage');
+            const fileNameDiv = document.getElementById('fileName');
+            
+            errorDiv.innerHTML = '';
+            fileNameDiv.innerHTML = '';
+
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                errorDiv.innerHTML = `<div class="error-message">❌ Please upload an image file only</div>`;
+                uploadedFile = null;
+                diagnoseBtn.disabled = true;
+                return;
+            }
+
+            uploadedFile = file;
+            fileNameDiv.innerHTML = `<div class="file-name">✓ ${file.name}</div>`;
+            diagnoseBtn.disabled = false;
+        }
+
+        // Diagnose Button
+        diagnoseBtn.addEventListener('click', async () => {
+            if (!uploadedFile) return;
+
+            const loadingContainer = document.getElementById('loadingContainer');
+            const resultsContainer = document.getElementById('resultsContainer');
+            
+            resultsContainer.classList.remove('active');
+            loadingContainer.classList.add('active');
+            diagnoseBtn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('image', uploadedFile);
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/predict/', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('Prediction failed');
+
+                const data = await response.json();
+
+                // Display results
+                document.getElementById('originalImage').src = 'data:image/jpeg;base64,' + data.original_image;
+                document.getElementById('segmentedImage').src = 'data:image/jpeg;base64,' + data.mask_overlay;
+                document.getElementById('saliencyImage').src = 'data:image/jpeg;base64,' + data.saliency_map;
+                document.getElementById('predictionLabel').textContent = data.predicted_label;
+                document.getElementById('tumorSize').textContent = `Tumor Diameter: ${data.tumor_size} mm`;
+
+                loadingContainer.classList.remove('active');
+                resultsContainer.classList.add('active');
+                diagnoseBtn.disabled = false;
+
+            } catch (error) {
+                loadingContainer.classList.remove('active');
+                alert('Error: ' + error.message);
+                diagnoseBtn.disabled = false;
+            }
+        });
+
+        // Clear Button
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            uploadedFile = null;
+            fileInput.value = '';
+            document.getElementById('fileName').innerHTML = '';
+            document.getElementById('errorMessage').innerHTML = '';
+            document.getElementById('resultsContainer').classList.remove('active');
+            diagnoseBtn.disabled = true;
+        });
+    </script>
+</body>
+</html>

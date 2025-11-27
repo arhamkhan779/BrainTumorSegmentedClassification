@@ -140,6 +140,8 @@ celerybeat.pid
 .venv
 env/
 venv/
+segmentation_unet_model.keras
+classification_model.keras
 ENV/
 env.bak/
 venv.bak/
